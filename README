@@ -8,6 +8,7 @@
 # 执行步骤
 1、http://127.0.0.1:9999/swagger-ui/index.html#/scheduler-api/jobs 获取可执行的任务列表
 2、http://127.0.0.1:9999/swagger-ui/index.html#/scheduler-api/createJob 创建任务
+http://127.0.0.1:9999/swagger-ui/index.html#/scheduler-api/updateJob 修改任务
 {
   "name": "string", //任务名称，每个任务的名称唯一
   "clazz": "string", //从接口1获取的类名
@@ -20,3 +21,22 @@
     }
   ]
 }
+3、http://127.0.0.1:9999/swagger-ui/index.html#/scheduler-api/queryJob 获取任务列表
+[
+  {
+    "name": "string", //任务名称，每个任务的名称唯一
+    "status": "Sleeping", //任务状态，Sleeping 睡眠 Running 执行中 Completed 完成
+    "run": 0, //执行次数
+    "maxRun": 0, //最大执行次数
+    "failedRun": 0, //失败次数
+    "execDate": "2022-06-15T19:38:46.908Z", //下一次执行时间
+    "interval": 0, //执行间隔
+    "logs": [ // 执行日志
+      "string"
+    ]
+  }
+]
+4、http://127.0.0.1:9999/swagger-ui/index.html#/scheduler-api/deleteJob 删除任务
+http://127.0.0.1:9999/swagger-ui/index.html#/scheduler-api/stopJob 停止任务
+http://127.0.0.1:9999/swagger-ui/index.html#/scheduler-api/restartJob 重启任务
+传的参数是任务名称
