@@ -6,18 +6,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.Lob;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.time.Duration;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 
 @Data
@@ -48,7 +47,8 @@ public class JobInfo {
      * 最大执行次数
      */
     @Column
-    private int maxRun;/**
+    private int maxRun;
+    /**
      * 失败的执行次数
      */
     @Column
@@ -59,10 +59,10 @@ public class JobInfo {
     @Column(nullable = true)
     private Date interruptDate;
     /**
-     * 期望中断的秒
+     * 执行时间
      */
-    @Column
-    private int timeOut;
+    @Column(nullable = true)
+    private Date execDate;
     /**
      * 执行间隔
      */
@@ -73,12 +73,8 @@ public class JobInfo {
      */
     @Column(name = "clazz")
     private String clazz;
-    /**
-     * 任务参数
-     */
-    @Lob
-    @Column(name = "params")
-    private Map<String,Object> params;
+    @OneToMany(mappedBy = "jobInfo",fetch = FetchType.EAGER)
+    private List<JobParam> params;
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

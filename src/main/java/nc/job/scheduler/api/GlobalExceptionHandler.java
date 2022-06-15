@@ -1,6 +1,5 @@
 package nc.job.scheduler.api;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;

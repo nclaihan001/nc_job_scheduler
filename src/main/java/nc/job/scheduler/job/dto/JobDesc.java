@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
 
@@ -24,15 +25,12 @@ public class JobDesc {
     @Length(max = 255,message = "任务类不能超过255个字符")
     @Schema(description = "执行的任务类",required = true)
     private String clazz;
-    @Max(message = "执行间隔必须大于5",value = 5)
-    @Schema(description = "执行间隔，单位为秒",required = true,example = "6")
+    @Min(message = "执行间隔必须大于5",value = 5)
+    @Schema(description = "执行间隔，单位为秒",required = true,example = "5")
     private int interval;
-    @Max(message = "执行上限必须大于0",value = 0)
+    @Min(message = "执行上限必须大于0",value = 1)
     @Schema(description = "执行上限",required = true,example = "1")
     private int maxRun;
-    @Max(message = "超时时间必须大于30",value = 30)
-    @Schema(description = "超时时间，单位为秒",required = true,example = "60")
-    private int timeOut;
     @Valid
     @Schema(description = "执行参数",required = true)
     private List<Param> params;

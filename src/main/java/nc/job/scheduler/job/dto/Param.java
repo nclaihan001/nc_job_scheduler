@@ -13,5 +13,5 @@ public class Param {
     private String key;
     @NotNull(message = "内容不能为空")
     @Schema(description = "内容")
-    private Object value;
+    private String value;
 }
