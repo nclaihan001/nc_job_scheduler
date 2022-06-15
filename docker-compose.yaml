@@ -21,7 +21,10 @@ services:
     environment:
       MYSQL_HOST: scheduler_db
       MYSQL_PASSWORD: root123456
-      JOB_NAME: nclaihan
+      # 节点名称(每个节点唯一)
+      NODE_NAME: nclaihan
+      # 慢任务监控阈值（秒）
+      SLOW_TASK: 1
     entrypoint: java -jar /app.jar
     ports:
       - "9999:8080"

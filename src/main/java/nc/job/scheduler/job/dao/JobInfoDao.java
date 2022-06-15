@@ -15,10 +15,10 @@ import java.util.List;
 
 @Repository
 public interface JobInfoDao extends JpaRepository<JobInfo,String> {
-    @Query(value = "UPDATE job_info SET status = 0,node=null WHERE status = 1 AND node = ?1",nativeQuery = true)
+    @Query(value = "UPDATE job_info SET status = 0,node=null WHERE status = ?2 AND node = ?1",nativeQuery = true)
     @Modifying
     @Transactional
-    int interruptTask(String node);
+    int interruptTask(String node,int status);
 
 
     /**

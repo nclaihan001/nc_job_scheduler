@@ -1,8 +1,13 @@
+# 启动节点
+  docker-compose up -d --build
+# 访问接口页面
+  http://127.0.0.1:9999/swagger-ui/index.html
+# 实现自定义任务
 1、自定义Job类继承nc.job.scheduler.job.info.Job
 2、注册进Spring的@Component
 # 执行步骤
-1、http://127.0.0.1:8080/swagger-ui/index.html#/scheduler-api/jobs 获取可执行的任务列表
-2、http://127.0.0.1:8080/swagger-ui/index.html#/scheduler-api/createJob 创建任务
+1、http://127.0.0.1:9999/swagger-ui/index.html#/scheduler-api/jobs 获取可执行的任务列表
+2、http://127.0.0.1:9999/swagger-ui/index.html#/scheduler-api/createJob 创建任务
 {
   "name": "string", //任务名称，每个任务的名称唯一
   "clazz": "string", //从接口1获取的类名

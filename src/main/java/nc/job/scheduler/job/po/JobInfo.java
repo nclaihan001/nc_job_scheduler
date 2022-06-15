@@ -13,6 +13,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import java.util.Date;
 import java.util.List;
@@ -74,7 +75,12 @@ public class JobInfo {
     private String node;
     @OneToMany(mappedBy = "jobInfo",fetch = FetchType.EAGER)
     private List<JobParam> params;
-
+    /**
+     * 任务日志
+     */
+    @OrderBy(value = "createdDate asc")
+    @OneToMany(mappedBy = "jobInfo",fetch = FetchType.LAZY)
+    private List<JobLog> jobLogs;
 
     @Override
     public boolean equals(Object o) {

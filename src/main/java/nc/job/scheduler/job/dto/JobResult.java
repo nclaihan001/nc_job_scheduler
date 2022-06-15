@@ -5,6 +5,7 @@ import lombok.Data;
 import nc.job.scheduler.job.po.JobStatus;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class JobResult {
@@ -30,5 +31,9 @@ public class JobResult {
      * 执行间隔
      */
     private int interval;
+    /**
+     * 执行日志
+     */
+    private List<String> logs;
 
 }

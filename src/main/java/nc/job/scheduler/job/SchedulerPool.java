@@ -5,11 +5,15 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import nc.job.scheduler.job.dao.JobInfoDao;
+import nc.job.scheduler.job.dao.JobLogDao;
+import nc.job.scheduler.job.dao.NodeInfoDao;
 import nc.job.scheduler.job.info.Context;
 import nc.job.scheduler.job.info.Job;
 import nc.job.scheduler.job.po.JobInfo;
+import nc.job.scheduler.job.po.JobLog;
 import nc.job.scheduler.job.po.JobParam;
 import nc.job.scheduler.job.po.JobStatus;
+import nc.job.scheduler.job.po.NodeInfo;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -17,11 +21,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -49,13 +55,35 @@ public class SchedulerPool implements InitializingBean{
     private final JobInfoDao jobInfoDao;
     private final ApplicationContext context;
     private final TransactionTemplate transactionTemplate;
-
+    private final NodeInfoDao nodeInfoDao;
+    private final JobLogDao jobLogDao;
     @Override
     public void afterPropertiesSet() throws Exception {
-        jobInfoDao.interruptTask(getNodeId());
+        jobInfoDao.interruptTask(getNodeId(),1);
         for (int i = 0; i < TASK_COUNT; i++) {
             RUNNER_SERVICE.scheduleWithFixedDelay(new RunnerTask(),0,1, TimeUnit.SECONDS);
         }
+    }
+
+    /**
+     * 每隔10秒清理一次丢失节点
+     */
+    @Transactional
+    @Scheduled(fixedDelay = 10000,initialDelay = 5000)
+    public void removeLostNode(){
+        for (NodeInfo nodeInfo : nodeInfoDao.findLostNode(DateUtils.addSeconds(new Date(),-10))) {
+            nodeInfoDao.delete(nodeInfo);
+            jobInfoDao.interruptTask(nodeInfo.getId(),0);
+            jobInfoDao.interruptTask(nodeInfo.getId(),1);
+        }
+    }
+    /**
+     * 每隔3秒注册一次节点
+     */
+    @Scheduled(fixedDelay = 3000,initialDelay = 5000)
+    public void registerNode(){
+        String nodeId = getNodeId();
+        nodeInfoDao.saveAndFlush(NodeInfo.builder().id(nodeId).updateTime(new Date()).build());
     }
     private String getNodeId(){
         String nodeName = Objects.requireNonNull(context.getEnvironment().getProperty("job.name"));
@@ -92,6 +120,12 @@ public class SchedulerPool implements InitializingBean{
                     }finally {
                         long interval = System.currentTimeMillis() - startTime;
                         if(interval > slowTask){
+                            jobLogDao.saveAndFlush(JobLog.builder()
+                                            .id(UUID.randomUUID().toString().replaceAll("-",""))
+                                            .jobInfo(jobInfo)
+                                            .desc("任务执行时间过长:"+interval+"ms")
+                                            .createdDate(new Date())
+                                    .build());
                             log.warn("任务[{}]的执行时间过长: {} ms",jobInfo.getName(),interval);
                         }
                     }
@@ -103,7 +137,6 @@ public class SchedulerPool implements InitializingBean{
      * 执行任务
      * @param jobInfo
      */
-    @Transactional
     @SneakyThrows
     public void runTask(JobInfo jobInfo){
         Job job = (Job) context.getBean(Class.forName(jobInfo.getClazz()));
@@ -115,8 +148,20 @@ public class SchedulerPool implements InitializingBean{
             jobInfo.setRun(jobInfo.getRun()+1);
             job.execute(context);
             jobInfo.setExecDate(DateUtils.addSeconds(new Date(),jobInfo.getInterval()));
+            jobLogDao.saveAndFlush(JobLog.builder()
+                    .id(UUID.randomUUID().toString().replaceAll("-",""))
+                    .jobInfo(jobInfo)
+                    .desc("任务执行完成")
+                    .createdDate(new Date())
+                    .build());
         }catch (Exception e){
             jobInfo.setFailedRun(jobInfo.getFailedRun()+1);
+            jobLogDao.saveAndFlush(JobLog.builder()
+                    .id(UUID.randomUUID().toString().replaceAll("-",""))
+                    .jobInfo(jobInfo)
+                    .desc("任务执行失败")
+                    .createdDate(new Date())
+                    .build());
         }
         if(jobInfo.getRun()>=jobInfo.getMaxRun()){
             jobInfo.setStatus(JobStatus.Completed);
