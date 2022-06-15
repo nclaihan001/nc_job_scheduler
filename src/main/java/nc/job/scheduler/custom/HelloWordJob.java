@@ -17,7 +17,8 @@ import java.util.List;
 public class HelloWordJob implements Job {
     @Override
     public void execute(Context context) {
-        log.info(context.getParams().get("str"));
+
+        throw new RuntimeException(context.getParams().get("str"));
     }
 
     @Override

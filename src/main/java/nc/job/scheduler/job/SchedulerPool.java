@@ -148,7 +148,6 @@ public class SchedulerPool implements InitializingBean{
         try{
             jobInfo.setRun(jobInfo.getRun()+1);
             job.execute(context);
-            jobInfo.setExecDate(DateUtils.addSeconds(new Date(),jobInfo.getInterval()));
             jobLogDao.saveAndFlush(JobLog.builder()
                     .id(UUID.randomUUID().toString().replaceAll("-",""))
                     .jobInfo(jobInfo)
@@ -164,8 +163,8 @@ public class SchedulerPool implements InitializingBean{
                     .desc("任务执行失败")
                     .createdDate(new Date())
                     .build());
-            success=false;
         }
+        jobInfo.setExecDate(DateUtils.addSeconds(new Date(),jobInfo.getInterval()));
         if((jobInfo.isOnce() && success) || jobInfo.getRun()>=jobInfo.getMaxRun()){
             jobInfo.setStatus(JobStatus.Completed);
             log.info("任务[{}]结束执行",jobInfo.getName());
