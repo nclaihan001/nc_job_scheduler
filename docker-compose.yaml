@@ -23,8 +23,8 @@ services:
       MYSQL_PASSWORD: root123456
       # 节点名称(每个节点唯一)
       NODE_NAME: nclaihan
-      # 慢任务监控阈值（秒）
-      SLOW_TASK: 1
+      # 慢任务监控阈值（毫秒）
+      SLOW_TASK: 1000
     entrypoint: java -jar /app.jar
     ports:
       - "9999:8080"
