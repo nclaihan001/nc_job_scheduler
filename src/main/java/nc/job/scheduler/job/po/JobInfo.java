@@ -68,6 +68,8 @@ public class JobInfo {
      */
     @Column(name = "clazz")
     private String clazz;
+    @Column
+    private boolean once;
     /**
      * 执行节点
      */

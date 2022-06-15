@@ -19,7 +19,8 @@ http://127.0.0.1:9999/swagger-ui/index.html#/scheduler-api/updateJob 修改任�
       "key": "string",
       "value": "string"
     }
-  ]
+  ],
+  "once": true //是否只执行一次
 }
 3、http://127.0.0.1:9999/swagger-ui/index.html#/scheduler-api/queryJob 获取任务列表
 [

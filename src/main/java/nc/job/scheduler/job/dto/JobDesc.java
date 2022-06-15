@@ -32,4 +32,6 @@ public class JobDesc {
     @Valid
     @Schema(description = "执行参数",required = true)
     private List<Param> params;
+    @Schema(description = "是否只执行一次")
+    private boolean once = false;
 }

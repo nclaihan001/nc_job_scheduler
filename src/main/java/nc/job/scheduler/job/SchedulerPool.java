@@ -163,7 +163,7 @@ public class SchedulerPool implements InitializingBean{
                     .createdDate(new Date())
                     .build());
         }
-        if(jobInfo.getRun()>=jobInfo.getMaxRun()){
+        if(jobInfo.isOnce() || jobInfo.getRun()>=jobInfo.getMaxRun()){
             jobInfo.setStatus(JobStatus.Completed);
             log.info("任务[{}]结束执行",jobInfo.getName());
         }else{

@@ -47,6 +47,7 @@ public class Scheduler{
                 .interval(desc.getInterval())
                 .run(0)
                 .failedRun(0)
+                .once(desc.isOnce())
                 .execDate(DateUtils.addSeconds(new Date(),desc.getInterval()))
                 .maxRun(desc.getMaxRun())
                 .status(JobStatus.Sleeping)
@@ -125,7 +126,14 @@ public class Scheduler{
     public List<JobResult> getJobs(){
         return jobInfoDao.findAll().stream().map(jobInfo -> {
             JobResult jobResult = new JobResult();
-            BeanUtils.copyProperties(jobInfo,jobResult);
+            jobResult.setName(jobInfo.getName());
+            jobResult.setExecDate(jobInfo.getExecDate());
+            jobResult.setStatus(jobInfo.getStatus());
+            jobResult.setInterval(jobInfo.getInterval());
+            jobResult.setRun(jobInfo.getRun());
+            jobResult.setFailedRun(jobInfo.getFailedRun());
+            jobResult.setMaxRun(jobInfo.getMaxRun());
+            jobResult.setOnce(jobInfo.isOnce());
             jobResult.setLogs(jobInfo.getJobLogs().stream()
                     .map(jobLog ->
                             "["+ DateFormatUtils.format(jobLog.getCreatedDate(),"yyyy-MM-dd HH:mm:ss") +"] "+

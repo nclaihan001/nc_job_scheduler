@@ -35,5 +35,9 @@ public class JobResult {
      * 执行日志
      */
     private List<String> logs;
+    /**
+     * 是否只执行一次
+     */
+    private boolean once;
 
 }
