@@ -144,6 +144,7 @@ public class SchedulerPool implements InitializingBean{
                 .collect(Collectors.toMap(JobParam::getKey, JobParam::getValue));
         Context context = new Context();
         context.setParams(params);
+        boolean success = false;
         try{
             jobInfo.setRun(jobInfo.getRun()+1);
             job.execute(context);
@@ -154,6 +155,7 @@ public class SchedulerPool implements InitializingBean{
                     .desc("任务执行完成")
                     .createdDate(new Date())
                     .build());
+            success=true;
         }catch (Exception e){
             jobInfo.setFailedRun(jobInfo.getFailedRun()+1);
             jobLogDao.saveAndFlush(JobLog.builder()
@@ -162,8 +164,9 @@ public class SchedulerPool implements InitializingBean{
                     .desc("任务执行失败")
                     .createdDate(new Date())
                     .build());
+            success=false;
         }
-        if(jobInfo.isOnce() || jobInfo.getRun()>=jobInfo.getMaxRun()){
+        if((jobInfo.isOnce() && success) || jobInfo.getRun()>=jobInfo.getMaxRun()){
             jobInfo.setStatus(JobStatus.Completed);
             log.info("任务[{}]结束执行",jobInfo.getName());
         }else{
