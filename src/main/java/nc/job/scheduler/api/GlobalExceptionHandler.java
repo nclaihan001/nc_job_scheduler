@@ -14,4 +14,9 @@ public class GlobalExceptionHandler {
     public String exception(MethodArgumentNotValidException e){
         return Objects.requireNonNull(e.getFieldError()).getDefaultMessage();
     }
+    @ResponseBody
+    @ExceptionHandler
+    public String exception(Exception e){
+        return "服务器出现未知异常";
+    }
 }

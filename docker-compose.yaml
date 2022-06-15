@@ -1,0 +1,27 @@
+version: "3"
+services:
+  mysql:
+    container_name: scheduler_db
+    image: mysql:8
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: job_scheduler
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3308:3306"
+  server:
+    container_name: scheduler_server
+    restart: always
+    build:
+      dockerfile: Dockerfile
+      context: .
+    environment:
+      MYSQL_HOST: scheduler_db
+      MYSQL_PASSWORD: root123456
+      JOB_NAME: nclaihan
+    entrypoint: java -jar /app.jar
+    ports:
+      - "9999:8080"

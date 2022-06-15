@@ -4,14 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import nc.job.scheduler.job.dao.JobInfoDao;
 import nc.job.scheduler.job.dao.JobParamDao;
 import nc.job.scheduler.job.dto.JobDesc;
-import nc.job.scheduler.job.dto.Param;
+import nc.job.scheduler.job.dto.JobResult;
 import nc.job.scheduler.job.po.JobInfo;
 import nc.job.scheduler.job.po.JobParam;
 import nc.job.scheduler.job.po.JobStatus;
 import org.apache.commons.lang3.time.DateUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,12 +24,13 @@ import java.util.stream.Collectors;
  */
 @Component
 @Slf4j
-@ConfigurationProperties(prefix = "job")
 @Transactional
 @AllArgsConstructor
 public class Scheduler{
     private final JobInfoDao jobInfoDao;
     private final JobParamDao jobParamDao;
+
+
     /**
      * 注册新任务
      * @param desc
@@ -58,24 +57,61 @@ public class Scheduler{
                 .build()).collect(Collectors.toList());
         jobParamDao.saveAll(params);
     }
+
+    /**
+     * 删除任务
+     * @param job
+     */
     @Transactional
     public void delete(String job){
         Optional<JobInfo> optional =jobInfoDao.findById(job);
         if(optional.isPresent()){
-            jobInfoDao.delete(optional.get());
             jobParamDao.deleteJobParamByJobInfo(optional.get());
+            jobInfoDao.delete(optional.get());
         }
     }
     /**
-     * 周期性清理超时任务
+     * 重启任务
+     * @param job
      */
-    @Scheduled(fixedDelay = 30000,initialDelay = 0)
-    public void afterPropertiesSet(){
-        try{
-            jobInfoDao.interruptTask(new Date());
-        }catch (Exception e){
-            log.info("任务中断失败",e);
+    @Transactional
+    public boolean restart(String job){
+        Optional<JobInfo> optional =jobInfoDao.findById(job);
+        if(optional.isPresent()){
+            JobInfo jobInfo = optional.get();
+            jobInfo.setStatus(JobStatus.Sleeping);
+            jobInfo.setRun(0);
+            jobInfoDao.saveAndFlush(jobInfo);
+            return true;
         }
+        return false;
     }
+    /**
+     * 停止任务
+     * @param job
+     */
+    @Transactional
+    public boolean stop(String job){
+        Optional<JobInfo> optional =jobInfoDao.findById(job);
+        if(optional.isPresent()){
+            JobInfo jobInfo = optional.get();
+            jobInfo.setStatus(JobStatus.Completed);
+            jobInfoDao.saveAndFlush(jobInfo);
+            return true;
+        }
+        return false;
+    }
+    /**
+     * 获取任务列表
+     * @return
+     */
+    public List<JobResult> getJobs(){
+        return jobInfoDao.findAll().stream().map(jobInfo -> {
+            JobResult jobResult = new JobResult();
+            BeanUtils.copyProperties(jobInfo,jobResult);
+            return jobResult;
+        }).collect(Collectors.toList());
+    }
+
 }
 

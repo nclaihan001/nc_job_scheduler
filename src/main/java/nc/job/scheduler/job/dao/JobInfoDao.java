@@ -1,7 +1,7 @@
 package nc.job.scheduler.job.dao;
 
 import nc.job.scheduler.job.po.JobInfo;
-import nc.job.scheduler.job.po.JobStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
@@ -12,14 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.LockModeType;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface JobInfoDao extends JpaRepository<JobInfo,String> {
-    @Query(value = "UPDATE job_info SET run = run + 1,status = 0,failed_run = failed_run + 1 WHERE status = 1 AND interrupt_date < ?1 AND interrupt_date IS NOT NULL",nativeQuery = true)
+    @Query(value = "UPDATE job_info SET status = 0,node=null WHERE status = 1 AND node = ?1",nativeQuery = true)
     @Modifying
     @Transactional
-    int interruptTask(Date date);
+    int interruptTask(String node);
 
 
     /**
@@ -28,7 +27,7 @@ public interface JobInfoDao extends JpaRepository<JobInfo,String> {
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(value = "FROM JobInfo WHERE status = 0 AND run < maxRun AND execDate < ?1 ORDER BY name ASC")
-    List<JobInfo> findSleepingTask(Date date);
+    List<JobInfo> findSleepingTask(Date date, Pageable pageable);
 
 
 }

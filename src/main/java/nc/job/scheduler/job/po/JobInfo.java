@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -54,11 +53,6 @@ public class JobInfo {
     @Column
     private int failedRun;
     /**
-     * 期望中断时间
-     */
-    @Column(nullable = true)
-    private Date interruptDate;
-    /**
      * 执行时间
      */
     @Column(nullable = true)
@@ -73,8 +67,15 @@ public class JobInfo {
      */
     @Column(name = "clazz")
     private String clazz;
+    /**
+     * 执行节点
+     */
+    @Column
+    private String node;
     @OneToMany(mappedBy = "jobInfo",fetch = FetchType.EAGER)
     private List<JobParam> params;
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

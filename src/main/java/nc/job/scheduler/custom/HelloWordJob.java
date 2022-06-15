@@ -8,14 +8,16 @@ import nc.job.scheduler.job.info.Job;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+
+/**
+ * 打印字符串任务
+ */
 @Slf4j
 @Component
 public class HelloWordJob implements Job {
-    @SneakyThrows
     @Override
     public void execute(Context context) {
         log.info(context.getParams().get("str"));
-        Thread.sleep(1000*80);
     }
 
     @Override
