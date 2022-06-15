@@ -19,6 +19,7 @@ services:
       dockerfile: Dockerfile
       context: .
     environment:
+      TZ: Asia/Shanghai
       MYSQL_HOST: scheduler_db
       MYSQL_PASSWORD: root123456
       # 节点名称(每个节点唯一)
